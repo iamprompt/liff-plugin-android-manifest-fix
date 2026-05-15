@@ -39,13 +39,22 @@ npm install @line/liff
 
 ```typescript
 import liff from '@line/liff'
-import { androidManifestFixPlugin } from 'liff-plugin-android-manifest-fix'
+import androidManifestFixPlugin from 'liff-plugin-android-manifest-fix'
 
 liff.use(androidManifestFixPlugin)
 
 liff.init({ liffId: 'YOUR_LIFF_ID' }).then(() => {
   // your app logic
 })
+```
+
+You can also import the class directly to create your own instance:
+
+```typescript
+import liff from '@line/liff'
+import { AndroidManifestFixPlugin } from 'liff-plugin-android-manifest-fix'
+
+liff.use(new AndroidManifestFixPlugin())
 ```
 
 ## Usage (CDN / `<script>` tag)
@@ -56,7 +65,7 @@ Include the IIFE build **before** the LIFF SDK initialisation:
 <script src="https://unpkg.com/liff-plugin-android-manifest-fix/dist/index.browser.js"></script>
 <script src="https://static.line-scdn.net/liff/edge/versions/2.25.0/sdk.js"></script>
 <script>
-  liff.use(AndroidManifestFixPlugin.default)
+  liff.use(androidManifestFixPlugin)
 
   liff.init({ liffId: 'YOUR_LIFF_ID' }).then(function () {
     // your app logic
@@ -64,17 +73,16 @@ Include the IIFE build **before** the LIFF SDK initialisation:
 </script>
 ```
 
-> **Note:** When loaded via `<script>` tag, the global variable is
-> `AndroidManifestFixPlugin`. The plugin object itself is at
-> `AndroidManifestFixPlugin.default`.
+> **Note:** When loaded via `<script>` tag, the plugin instance is available directly
+> as the global variable `androidManifestFixPlugin`.
 
 ## How it works
 
-1. `liff.use(plugin)` registers the plugin; `install()` hooks into `liff.init()` via the [LIFF Plugin API Hook](https://developers.line.biz/en/docs/liff/liff-plugin/#liff-api-hook).
-2. **Before** `liff.init()` runs: `fetch` is replaced with a thin wrapper that appends `?t=<Date.now()>` (via the URL API) to every request matching `liffsdk.line-scdn.net/xlt/`.
-3. **After** `liff.init()` completes: the original `fetch` is restored — the wrapper is only active during initialization.
-4. All non-manifest requests are forwarded to the original `fetch` untouched during initialization.
-5. If `liff.use(plugin)` is called more than once with the same LIFF instance, subsequent calls are a no-op.
+1. The original `fetch` is captured at construction time and bound to `globalThis`.
+2. `liff.use(plugin)` registers the plugin; `install()` hooks into `liff.init()` via the [LIFF Plugin API Hook](https://developers.line.biz/en/docs/liff/liff-plugin/#liff-api-hook).
+3. **Before** `liff.init()` runs: `fetch` is replaced with a thin wrapper that appends `?t=<Date.now()>` (via the URL API) to every request matching `liffsdk.line-scdn.net/xlt`.
+4. **After** `liff.init()` completes: the original `fetch` is restored — the wrapper is only active during initialization.
+5. All non-manifest requests are forwarded to the original `fetch` untouched during initialization.
 
 ## License
 
