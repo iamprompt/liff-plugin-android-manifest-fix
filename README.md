@@ -13,9 +13,10 @@ manifest causes fetch errors such as:
 Failed to fetch https://liffsdk.line-scdn.net/xlt/.../manifest.json
 ```
 
-This plugin intercepts `window.fetch` and appends a `t=<timestamp>` query
-parameter to every request matching `liffsdk.line-scdn.net/xlt/`, effectively
-bypassing the cache on each app load.
+This plugin hooks into `liff.init()` to temporarily intercept `fetch` during
+initialization, appending a `t=<timestamp>` query parameter to every request
+matching `liffsdk.line-scdn.net/xlt/`. Once `liff.init()` completes, the
+original `fetch` is restored.
 
 ## Installation
 
@@ -69,13 +70,11 @@ Include the IIFE build **before** the LIFF SDK initialisation:
 
 ## How it works
 
-1. On `install()`, the plugin replaces `globalThis.fetch` with a thin wrapper.
-2. For any request whose URL contains `liffsdk.line-scdn.net/xlt/`, the wrapper
-   appends `?t=<Date.now()>` (using the URL API, which correctly handles
-   existing query parameters).
-3. All other requests are forwarded to the original `fetch` untouched.
-4. If `install()` is called more than once, subsequent calls are a no-op —
-   the fetch function is never double-wrapped.
+1. `liff.use(plugin)` registers the plugin; `install()` hooks into `liff.init()` via the [LIFF Plugin API Hook](https://developers.line.biz/en/docs/liff/liff-plugin/#liff-api-hook).
+2. **Before** `liff.init()` runs: `fetch` is replaced with a thin wrapper that appends `?t=<Date.now()>` (via the URL API) to every request matching `liffsdk.line-scdn.net/xlt/`.
+3. **After** `liff.init()` completes: the original `fetch` is restored — the wrapper is only active during initialization.
+4. All non-manifest requests are forwarded to the original `fetch` untouched during initialization.
+5. If `liff.use(plugin)` is called more than once with the same LIFF instance, subsequent calls are a no-op.
 
 ## License
 

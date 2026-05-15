@@ -1,6 +1,8 @@
+import { LiffPluginContext } from '@line/liff';
+
 declare const androidManifestFixPlugin: {
     name: "android-manifest-fix";
-    install(_liff: unknown): void;
+    install(context: LiffPluginContext): void;
 };
 
 export { androidManifestFixPlugin, androidManifestFixPlugin as default };
