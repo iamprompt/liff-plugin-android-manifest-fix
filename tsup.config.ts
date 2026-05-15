@@ -23,5 +23,6 @@ export default defineConfig([
     minify: true,
     sourcemap: false,
     outExtension: () => ({ js: '.js' }),
+    footer: { js: 'androidManifestFixPlugin=androidManifestFixPlugin.default;' },
   },
 ])
