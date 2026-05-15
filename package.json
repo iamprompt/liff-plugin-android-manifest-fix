@@ -1,0 +1,39 @@
+{
+  "name": "liff-plugin-android-manifest-fix",
+  "version": "0.1.0",
+  "description": "LIFF plugin that fixes Android WebView manifest fetch caching errors",
+  "keywords": ["liff", "line", "android", "plugin", "webview"],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@line/liff": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@line/liff": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@line/liff": "^2.25.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
