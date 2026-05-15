@@ -1,6 +1,6 @@
-import type { LiffPluginContext } from '@line/liff'
+import type { LiffPlugin, LiffPluginContext } from '@line/liff'
 
-const MANIFEST_URL_PATTERN = 'liffsdk.line-scdn.net/xlt/'
+const MANIFEST_URL_PATTERN = 'liffsdk.line-scdn.net/xlt'
 
 function withCacheBust(urlString: string): string {
   const u = new URL(urlString)
@@ -8,49 +8,38 @@ function withCacheBust(urlString: string): string {
   return u.toString()
 }
 
-const installedContexts = new WeakSet<object>()
+export class AndroidManifestFixPlugin implements LiffPlugin<void> {
+  readonly name = 'android-manifest-fix' as const
 
-export const androidManifestFixPlugin = {
-  name: 'android-manifest-fix' as const,
+  private readonly originalFetch: typeof globalThis.fetch
+
+  constructor() {
+    this.originalFetch = globalThis.fetch
+  }
 
   install(context: LiffPluginContext): void {
-    if (installedContexts.has(context)) return
-    installedContexts.add(context)
+    context.hooks.init.before(this.patchFetch.bind(this))
+    context.hooks.init.after(this.restoreFetch.bind(this))
+  }
 
-    let originalFetch: typeof globalThis.fetch | undefined
+  private patchFetch() {
+    window.fetch = (input, options) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
 
-    context.hooks.init.before(async () => {
-      if (typeof globalThis.fetch !== 'function') return
-      originalFetch = globalThis.fetch
-
-      globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-        const url =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-              ? input.href
-              : input.url
-
-        if (url.includes(MANIFEST_URL_PATTERN)) {
-          const bustUrl = withCacheBust(url)
-          const modifiedInput = input instanceof Request ? new Request(bustUrl, input) : bustUrl
-          return originalFetch!(modifiedInput, init)
-        }
-
-        return originalFetch!(input, init)
+      if (url.includes(MANIFEST_URL_PATTERN)) {
+        const bustUrl = withCacheBust(url)
+        const modifiedInput = input instanceof Request ? new Request(bustUrl, input) : bustUrl
+        return this.originalFetch(modifiedInput, options)
       }
-    })
+      return this.originalFetch(url, options)
+    }
+    return Promise.resolve()
+  }
 
-    // Restores fetch after successful init. If liff.init() rejects,
-    // fetch remains patched until the page reloads (acceptable — failed
-    // init typically renders the page unusable regardless).
-    context.hooks.init.after(async () => {
-      if (originalFetch !== undefined) {
-        globalThis.fetch = originalFetch
-        originalFetch = undefined
-      }
-    })
-  },
+  private restoreFetch() {
+    window.fetch = this.originalFetch
+    return Promise.resolve()
+  }
 }
 
-export default androidManifestFixPlugin
+export default new AndroidManifestFixPlugin()
