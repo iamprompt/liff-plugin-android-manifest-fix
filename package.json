@@ -1,6 +1,6 @@
 {
   "name": "liff-plugin-android-manifest-fix",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "LIFF plugin that fixes Android WebView manifest fetch caching errors",
   "keywords": [
     "liff",

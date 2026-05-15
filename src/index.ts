@@ -14,7 +14,7 @@ export class AndroidManifestFixPlugin implements LiffPlugin<void> {
   private readonly originalFetch: typeof globalThis.fetch
 
   constructor() {
-    this.originalFetch = globalThis.fetch
+    this.originalFetch = globalThis.fetch.bind(globalThis)
   }
 
   install(context: LiffPluginContext): void {
