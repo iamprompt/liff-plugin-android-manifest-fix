@@ -8,10 +8,15 @@ function withCacheBust(urlString: string): string {
   return u.toString()
 }
 
+const installedContexts = new WeakSet<object>()
+
 export const androidManifestFixPlugin = {
   name: 'android-manifest-fix' as const,
 
   install(context: LiffPluginContext): void {
+    if (installedContexts.has(context)) return
+    installedContexts.add(context)
+
     let originalFetch: typeof globalThis.fetch | undefined
 
     context.hooks.init.before(async () => {
@@ -36,6 +41,9 @@ export const androidManifestFixPlugin = {
       }
     })
 
+    // Restores fetch after successful init. If liff.init() rejects,
+    // fetch remains patched until the page reloads (acceptable — failed
+    // init typically renders the page unusable regardless).
     context.hooks.init.after(async () => {
       if (originalFetch !== undefined) {
         globalThis.fetch = originalFetch

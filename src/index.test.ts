@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { LiffPluginContext } from '@line/liff'
 import { androidManifestFixPlugin } from './index'
 
 const MANIFEST_URL = 'https://liffsdk.line-scdn.net/xlt/some/path/manifest.json'
@@ -18,7 +19,7 @@ function createMockContext() {
           after: (fn: HookFn) => afterCallbacks.push(fn),
         },
       },
-    } as never,
+    } as unknown as LiffPluginContext,
     triggerBefore: () => Promise.all(beforeCallbacks.map((fn) => fn())),
     triggerAfter: () => Promise.all(afterCallbacks.map((fn) => fn())),
   }
@@ -138,6 +139,24 @@ describe('androidManifestFixPlugin', () => {
       await mock.triggerAfter()
 
       expect(globalThis.fetch).toBe(fetchSpy)
+      globalThis.fetch = originalFetch
+    })
+
+    it('does not double-patch when install() is called twice with the same context', async () => {
+      const originalFetch = globalThis.fetch
+      const fetchSpy = vi.fn().mockResolvedValue(new Response('ok'))
+      globalThis.fetch = fetchSpy as unknown as typeof fetch
+
+      const mock = createMockContext()
+      androidManifestFixPlugin.install(mock.context)
+      androidManifestFixPlugin.install(mock.context) // second call — no-op
+
+      await mock.triggerBefore()
+
+      // Only one wrapper installed — triggerBefore triggers only one before-callback
+      await mock.triggerAfter()
+      expect(globalThis.fetch).toBe(fetchSpy) // correctly restored
+
       globalThis.fetch = originalFetch
     })
 
