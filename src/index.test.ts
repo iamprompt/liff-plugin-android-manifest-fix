@@ -80,10 +80,23 @@ describe('androidManifestFixPlugin', () => {
       await fetch(new Request(MANIFEST_URL))
 
       expect(fetchSpy).toHaveBeenCalledOnce()
-      const calledUrl = fetchSpy.mock.calls[0][0]
-      expect(typeof calledUrl === 'string').toBe(true)
-      expect(calledUrl).toContain('liffsdk.line-scdn.net/xlt/')
-      expect(calledUrl).toMatch(/\?t=\d+/)
+      const calledInput = fetchSpy.mock.calls[0][0]
+      expect(calledInput).toBeInstanceOf(Request)
+      const calledReq = calledInput as Request
+      expect(calledReq.url).toContain('liffsdk.line-scdn.net/xlt/')
+      expect(calledReq.url).toMatch(/\?t=\d+/)
+    })
+
+    it('preserves Request object metadata when intercepting manifest URL', async () => {
+      const req = new Request(MANIFEST_URL, { headers: { 'X-Custom': 'value' } })
+      await fetch(req)
+
+      expect(fetchSpy).toHaveBeenCalledOnce()
+      const calledInput = fetchSpy.mock.calls[0][0]
+      expect(calledInput).toBeInstanceOf(Request)
+      const calledReq = calledInput as Request
+      expect(calledReq.headers.get('X-Custom')).toBe('value')
+      expect(calledReq.url).toMatch(/\?t=\d+/)
     })
   })
 })

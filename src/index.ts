@@ -21,7 +21,9 @@ export const androidManifestFixPlugin = {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
 
       if (url.includes(MANIFEST_URL_PATTERN)) {
-        return originalFetch(withCacheBust(url), init)
+        const bustUrl = withCacheBust(url)
+        const modifiedInput = input instanceof Request ? new Request(bustUrl, input) : bustUrl
+        return originalFetch(modifiedInput, init)
       }
 
       return originalFetch(input, init)

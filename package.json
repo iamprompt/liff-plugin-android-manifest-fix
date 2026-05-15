@@ -4,6 +4,7 @@
   "description": "LIFF plugin that fixes Android WebView manifest fetch caching errors",
   "keywords": ["liff", "line", "android", "plugin", "webview"],
   "license": "MIT",
+  "author": "Supakarn Laorattanakul",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -19,6 +20,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "prepublishOnly": "pnpm build",
     "test": "vitest run",
     "test:watch": "vitest"
   },
