@@ -15,12 +15,13 @@ export default defineConfig([
     },
   },
   {
-    entry: { 'index.browser': 'src/browser.ts' },
+    entry: { browser: 'src/browser.ts' },
     format: ['iife'],
     globalName: 'androidManifestFixPlugin',
     target: 'es2015',
     platform: 'browser',
     minify: true,
     sourcemap: false,
+    outExtension: () => ({ js: '.js' }),
   },
 ])

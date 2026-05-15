@@ -62,7 +62,7 @@ liff.use(new AndroidManifestFixPlugin())
 Include the IIFE build **before** the LIFF SDK initialisation:
 
 ```html
-<script src="https://unpkg.com/liff-plugin-android-manifest-fix/dist/index.browser.js"></script>
+<script src="https://unpkg.com/liff-plugin-android-manifest-fix/dist/browser.js"></script>
 <script src="https://static.line-scdn.net/liff/edge/versions/2.25.0/sdk.js"></script>
 <script>
   liff.use(androidManifestFixPlugin)
