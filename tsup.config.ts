@@ -10,4 +10,7 @@ export default defineConfig({
   dts: true,
   minify: true,
   sourcemap: false,
+  outExtension({ format }) {
+    return { js: format === 'iife' ? '.browser.js' : format === 'cjs' ? '.cjs' : '.js' }
+  },
 })
